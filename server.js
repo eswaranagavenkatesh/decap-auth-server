@@ -5,16 +5,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Set your fixed CMS login credentials here
-const ADMIN_EMAIL = "eswaranagavenkatesh@gmail.com";
-const ADMIN_PASSWORD = "12345678";
+// ✅ Fixed admin credentials (use .env for security in production)
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "eswaranagavenkatesh@gmail.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "12345678";
 
-// ✅ Root endpoint for testing
+// ✅ Root route (for quick health check)
 app.get("/", (req, res) => {
-  res.send("✅ Custom Decap Auth Server is running");
+  res.status(200).send("✅ Custom Decap Auth Server is running successfully");
 });
 
-// ✅ Login endpoint (replace GitHub OAuth)
+// ✅ Auth route (Decap CMS calls this)
 app.post("/auth", (req, res) => {
   const { email, password } = req.body;
 
@@ -23,19 +23,24 @@ app.post("/auth", (req, res) => {
   }
 
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    // You can generate a real JWT here if needed
-    const fakeToken = "custom-auth-token-12345";
-    return res.json({
-      token: fakeToken,
-      user: { email },
-      status: "success",
+    const token = `auth-token-${Date.now()}`; // Simple token for CMS
+    return res.status(200).json({
+      token,
+      user: { email, role: "admin" },
+      message: "✅ Authentication successful",
     });
-  } else {
-    return res.status(401).json({ error: "Invalid credentials" });
   }
+
+  return res.status(401).json({ error: "❌ Invalid email or password" });
 });
 
+// ✅ Handle unknown routes
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// ✅ Start server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`✅ Custom Decap Auth Server running on port ${PORT}`);
+  console.log(`🚀 Custom Decap Auth Server running on port ${PORT}`);
 });
