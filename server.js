@@ -1,52 +1,41 @@
 import express from "express";
-import fetch from "node-fetch";
 import cors from "cors";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const CLIENT_ID = "Ov23liBqYaexyrRNPYWh";
-const CLIENT_SECRET = "c0ccb5893c8afcebd9aea733df5148f67c06cf6e";
+// ✅ Set your fixed CMS login credentials here
+const ADMIN_EMAIL = "eswaranagavenkatesh@gmail.com";
+const ADMIN_PASSWORD = "12345678";
 
+// ✅ Root endpoint for testing
 app.get("/", (req, res) => {
-  res.send("Decap Auth Server is running");
+  res.send("✅ Custom Decap Auth Server is running");
 });
 
-app.get("/auth", async (req, res) => {
-  const code = req.query.code;
+// ✅ Login endpoint (replace GitHub OAuth)
+app.post("/auth", (req, res) => {
+  const { email, password } = req.body;
 
-  if (!code) {
-    return res.status(400).json({ error: "Missing code parameter" });
+  if (!email || !password) {
+    return res.status(400).json({ error: "Missing email or password" });
   }
 
-  try {
-    const response = await fetch("https://github.com/login/oauth/access_token", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        code,
-      }),
+  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    // You can generate a real JWT here if needed
+    const fakeToken = "custom-auth-token-12345";
+    return res.json({
+      token: fakeToken,
+      user: { email },
+      status: "success",
     });
-
-    const data = await response.json();
-
-    if (data.error) {
-      return res.status(400).json(data);
-    }
-
-    res.json(data);
-  } catch (err) {
-    console.error("OAuth Error:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+  } else {
+    return res.status(401).json({ error: "Invalid credentials" });
   }
 });
 
-app.listen(8080, () => {
-  console.log("✅ Decap Auth Server running on port 8080");
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`✅ Custom Decap Auth Server running on port ${PORT}`);
 });
