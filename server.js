@@ -5,17 +5,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Fixed admin credentials (use .env for security in production)
+// ✅ Replace with your actual admin credentials (use .env in production)
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "eswaranagavenkatesh@gmail.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "12345678";
 
-// ✅ Root route (for quick health check)
+// ✅ Health check route
 app.get("/", (req, res) => {
   res.status(200).send("✅ Custom Decap Auth Server is running successfully");
 });
 
-// ✅ Auth route (Decap CMS calls this)
-app.post("/auth", (req, res) => {
+// ✅ Login route (Decap CMS expects this endpoint)
+app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -23,15 +23,24 @@ app.post("/auth", (req, res) => {
   }
 
   if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    const token = `auth-token-${Date.now()}`; // Simple token for CMS
+    const token = `auth-token-${Date.now()}`; // simple token
     return res.status(200).json({
       token,
-      user: { email, role: "admin" },
+      user: {
+        email,
+        name: "Admin User",
+        role: "admin",
+      },
       message: "✅ Authentication successful",
     });
   }
 
   return res.status(401).json({ error: "❌ Invalid email or password" });
+});
+
+// ✅ Logout route (optional but recommended)
+app.post("/logout", (req, res) => {
+  res.status(200).json({ message: "✅ Logged out successfully" });
 });
 
 // ✅ Handle unknown routes
